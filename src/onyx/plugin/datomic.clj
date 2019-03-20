@@ -505,19 +505,18 @@
 (defrecord DatomicWriteBulkDatoms [conn]
   p-ext/Pipeline
   (read-batch
-      [_ event]
+    [_ event]
     (function/read-batch event))
 
   (write-batch
       [_ event]
-
       (let [written (->> (mapcat :leaves (:tree (:onyx.core/results event)))
                          (map (fn [tx]
                                 (d/transact conn (:tx (:message tx)))))
                          (doall)
                          (map try-deref)
                          (doall))]
-        (when (some #(= ::restartable-ex written) written)
+        (when (some #(= ::restartable-ex %) written)
           (throw (ex-info "Timed out transacting message to datomic. Rebooting task" 
                           {:restartable? true
                            :datomic-plugin? true})))
@@ -548,7 +547,7 @@
                          (doall)
                          (map try-deref)
                          (doall))]
-        (when (some #(= ::restartable-ex written) written)
+        (when (some #(= ::restartable-ex %) written)
           (throw (ex-info "Timed out writing async message to datomic. Rebooting task" 
                           {:restartable? true
                            :datomic-plugin? true})))
