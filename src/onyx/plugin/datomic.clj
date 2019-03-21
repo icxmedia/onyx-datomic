@@ -477,7 +477,6 @@
     (deref pending-tx)
     (catch Exception ex
       (let [cause (get-exception-cause ex)]
-        (println cause)
         (if (restartable-exceptions cause) 
           ::restartable-ex
           (throw (ex-info "Unrecoverable transaction exception. Not Rebooting task."
