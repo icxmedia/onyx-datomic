@@ -449,10 +449,22 @@
   [{:keys [onyx.core/pipeline]} lifecycle]
   {:datomic/conn (:conn pipeline)})
 
+(defn throwable?
+  [maybe-t]
+  (instance? Throwable maybe-t))
+
+(defn get-root-cause
+  [ex]
+  (when (throwable? ex)
+    (let [cause (.getCause ex)]
+      (if (and (throwable? cause) (.getCause cause))
+        (recur cause)
+        cause))))
+
 (defn get-exception-cause
   [ex]
   (when (instance? Throwable ex)
-    (or (ex-data ex) (ex-data (.getCause ex)))))
+    (:db/error (or (ex-data ex) (ex-data (get-root-cause ex))))))
 
 (def restartable-exceptions
   #{:db.error/transaction-timeout
@@ -465,6 +477,7 @@
     (deref pending-tx)
     (catch Exception ex
       (let [cause (get-exception-cause ex)]
+        (println cause)
         (if (restartable-exceptions cause) 
           ::restartable-ex
           (throw (ex-info "Unrecoverable transaction exception. Not Rebooting task."
@@ -517,7 +530,7 @@
                          (doall)
                          (map try-deref)
                          (doall))]
-        (when (some #(= ::restartable-ex written) written)
+        (when (some #(= ::restartable-ex %) written)
           (throw (ex-info "Timed out transacting message to datomic. Rebooting task" 
                           {:restartable? true
                            :datomic-plugin? true})))
@@ -548,7 +561,7 @@
                          (doall)
                          (map try-deref)
                          (doall))]
-        (when (some #(= ::restartable-ex written) written)
+        (when (some #(= ::restartable-ex %) written)
           (throw (ex-info "Timed out writing async message to datomic. Rebooting task" 
                           {:restartable? true
                            :datomic-plugin? true})))
