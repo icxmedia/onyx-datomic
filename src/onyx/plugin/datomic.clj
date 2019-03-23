@@ -460,8 +460,7 @@
   (when (throwable? ex)
     (if-let [db-error (:db/error (ex-data ex))]
       db-error
-      (let [cause (.getCause ex)
-            cause-throwable? (throwable? cause)]
+      (let [cause (.getCause ex)]
         (when (throwable? cause)
           (recur cause))))))
 
@@ -526,7 +525,7 @@
                               (d/transact conn (:tx (:message tx)))))
                        (doall)
                        (map try-deref)
-                       (doall))]
+                       (doall))] 
       (when (some #(= ::restartable-ex %) written)
         (throw (ex-info "Timed out transacting message to datomic. Rebooting task" 
                         {:restartable? true

@@ -64,6 +64,10 @@
      (d/connect db-uri)
      data)))
 
+(defn random-db-uri
+  []
+  (str "datomic:mem://" (java.util.UUID/randomUUID)))
+
 (defn with-db-conn
   [db-uri data f]
   (let [db (ensure-datomic! db-uri data)
@@ -111,7 +115,7 @@
   (mock-msg {:tx [[:db/add (d/tempid :com.mdrogalis/people) :name "Mike"]]}))
 
 (deftest test-write-datoms
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -123,7 +127,7 @@
           (is (not-empty (:tx-data (:datomic/written output)))))))))
 
 (deftest test-write-datoms-tx-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -139,7 +143,7 @@
             (is (true? (:datomic-plugin? output)))))))))
 
 (deftest test-write-datoms-tx-not-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -157,7 +161,7 @@
                                                      write-datoms-test-event)))))))))
 
 (deftest test-write-bulk-datoms
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -169,7 +173,7 @@
           (is (not-empty (:tx-data (first (:datomic/written output))))))))))
 
 (deftest test-write-bulk-datoms-tx-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -185,7 +189,7 @@
             (is (true? (:datomic-plugin? output)))))))))
 
 (deftest test-write-datoms-not-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -203,7 +207,7 @@
                                                      write-bulk-datoms-event)))))))))
 
 (deftest test-write-bulk-datoms-async
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -215,7 +219,7 @@
           (is (not-empty (:tx-data (first (:datomic/written output))))))))))
 
 (deftest test-write-bulk-datoms-async-tx-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
@@ -231,7 +235,7 @@
             (is (true? (:datomic-plugin? output)))))))))
 
 (deftest test-write-bulk-datoms-not-restartable
-  (let [db-uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
+  (let [db-uri (random-db-uri)]
     (with-db-conn
       db-uri
       schema
